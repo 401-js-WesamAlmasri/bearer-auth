@@ -5,15 +5,17 @@ process.env.SECRET = "toes";
 require('@code-fellows/supergoose');
 const middleware = require('../../../src/auth/middleware/bearer.js');
 const Users = require('../../../src/auth/models/users.js');
-const jwt = require('jsonwebtoken')
+const Token = require('../../../src/auth/models/tokens.js');
+const jwt = require('jsonwebtoken');
 
 let users = {
   admin: { username: 'admin', password: 'password' },
 };
 
 // Pre-load our database with fake users
+let globalUser;
 beforeAll(async (done) => {
-  await new Users(users.admin).save();
+  globalUser = await new Users(users.admin).save();
   done();
 });
 
@@ -43,10 +45,11 @@ describe('Auth Middleware', () => {
 
     });
 
-    it('logs in a user with a proper token', () => {
+    it('logs in a user with a proper token', async () => {
 
       const user = { username: 'admin' };
       const token = jwt.sign(user, process.env.SECRET);
+      await new Token({access: token, userId: globalUser._id}).save();
 
       req.headers = {
         authorization: `Bearer ${token}`,
