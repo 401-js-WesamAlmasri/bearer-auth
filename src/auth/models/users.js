@@ -46,6 +46,8 @@ users.statics.authenticateWithToken = async function (token) {
       // check if the token the clien sent is the same we have in our database
       if(dbToken.access === token){
         return user;
+      } else {
+        throw new Error('Invalid Token');
       }
     }
     throw new Error('User Not Found');
